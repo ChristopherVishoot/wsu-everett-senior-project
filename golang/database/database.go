@@ -8,6 +8,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+
 // Config holds the database configuration
 type Config struct {
 	Host     string
