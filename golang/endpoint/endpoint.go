@@ -8,15 +8,17 @@ import (
 	"wsu-senior-project/service"
 )
 
-// Endpoints holds all Go kit endpoints for the Hello service
+// Endpoints holds all Go kit endpoints for the service
 type Endpoints struct {
-	SayHelloEndpoint endpoint.Endpoint
+	SayHelloEndpoint  endpoint.Endpoint
+	CreateUserEndpoint endpoint.Endpoint
 }
 
-// MakeEndpoints creates and returns all endpoints for the Hello service
-func MakeEndpoints(svc service.HelloService) Endpoints {
+// MakeEndpoints creates and returns all endpoints for the service
+func MakeEndpoints(svc service.Service) Endpoints {
 	return Endpoints{
-		SayHelloEndpoint: makeSayHelloEndpoint(svc),
+		SayHelloEndpoint:  makeSayHelloEndpoint(svc),
+		CreateUserEndpoint: makeCreateUserEndpoint(svc),
 	}
 }
 
@@ -30,10 +32,33 @@ type HelloResponse struct {
 	Message string `json:"message"`
 }
 
-func makeSayHelloEndpoint(svc service.HelloService) endpoint.Endpoint {
+// CreateUserRequest holds the request parameters for the CreateUser endpoint
+type CreateUserRequest struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+// CreateUserResponse holds the response from the CreateUser endpoint
+type CreateUserResponse struct {
+	User  *service.User `json:"user,omitempty"`
+	Error string        `json:"error,omitempty"`
+}
+
+func makeSayHelloEndpoint(svc service.Service) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
 		req := request.(HelloRequest)
 		msg := svc.SayHello(req.Name)
 		return HelloResponse{Message: msg}, nil
+	}
+}
+
+func makeCreateUserEndpoint(svc service.Service) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(CreateUserRequest)
+		user, err := svc.CreateUser(req.Name, req.Email)
+		if err != nil {
+			return CreateUserResponse{Error: err.Error()}, nil
+		}
+		return CreateUserResponse{User: user}, nil
 	}
 }
