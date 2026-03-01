@@ -17,6 +17,7 @@ type User struct {
 type Service interface {
 	SayHello(name string) string
 	CreateUser(name, email string) (*User, error)
+	GetUsers() ([]User, error)
 }
 
 // service is the implementation of Service
@@ -49,4 +50,23 @@ func (s *service) CreateUser(name, email string) (*User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+// GetUsers retrieves all users from the database
+func (s *service) GetUsers() ([]User, error) {
+	rows, err := s.db.Query(`SELECT id, name, email, created_at FROM users ORDER BY id`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []User
+	for rows.Next() {
+		var user User
+		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, rows.Err()
 }

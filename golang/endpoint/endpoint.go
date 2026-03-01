@@ -10,15 +10,17 @@ import (
 
 // Endpoints holds all Go kit endpoints for the service
 type Endpoints struct {
-	SayHelloEndpoint  endpoint.Endpoint
+	SayHelloEndpoint   endpoint.Endpoint
 	CreateUserEndpoint endpoint.Endpoint
+	GetUsersEndpoint   endpoint.Endpoint
 }
 
 // MakeEndpoints creates and returns all endpoints for the service
 func MakeEndpoints(svc service.Service) Endpoints {
 	return Endpoints{
-		SayHelloEndpoint:  makeSayHelloEndpoint(svc),
+		SayHelloEndpoint:   makeSayHelloEndpoint(svc),
 		CreateUserEndpoint: makeCreateUserEndpoint(svc),
+		GetUsersEndpoint:   makeGetUsersEndpoint(svc),
 	}
 }
 
@@ -44,6 +46,12 @@ type CreateUserResponse struct {
 	Error string        `json:"error,omitempty"`
 }
 
+// GetUsersResponse holds the response from the GetUsers endpoint
+type GetUsersResponse struct {
+	Users []service.User `json:"users"`
+	Error string         `json:"error,omitempty"`
+}
+
 func makeSayHelloEndpoint(svc service.Service) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
 		req := request.(HelloRequest)
@@ -60,5 +68,15 @@ func makeCreateUserEndpoint(svc service.Service) endpoint.Endpoint {
 			return CreateUserResponse{Error: err.Error()}, nil
 		}
 		return CreateUserResponse{User: user}, nil
+	}
+}
+
+func makeGetUsersEndpoint(svc service.Service) endpoint.Endpoint {
+	return func(_ context.Context, _ interface{}) (interface{}, error) {
+		users, err := svc.GetUsers()
+		if err != nil {
+			return GetUsersResponse{Error: err.Error()}, nil
+		}
+		return GetUsersResponse{Users: users}, nil
 	}
 }

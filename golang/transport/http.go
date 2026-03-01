@@ -26,6 +26,12 @@ func NewHTTPHandler(endpoints endpoint.Endpoints) http.Handler {
 		encodeResponse,
 	))
 
+	mux.Handle("/users/all", httptransport.NewServer(
+		endpoints.GetUsersEndpoint,
+		decodeGetUsersRequest,
+		encodeResponse,
+	))
+
 	return mux
 }
 
@@ -43,6 +49,10 @@ func decodeCreateUserRequest(_ context.Context, r *http.Request) (interface{}, e
 		return endpoint.CreateUserRequest{}, nil
 	}
 	return request, nil
+}
+
+func decodeGetUsersRequest(_ context.Context, _ *http.Request) (interface{}, error) {
+	return nil, nil
 }
 
 func encodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
